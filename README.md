@@ -30,11 +30,11 @@ A tiny number guessing game that started as a Python script in my terminal and g
 
 ## Install
 
-1. Download [`bin/guess_the_number.fap`](bin/guess_the_number.fap).
+1. Download [`bin/guess_the_number.fap`](bin/guess_the_number.fap) (official firmware 1.5.x). For Momentum firmware use [`bin/momentum/guess_the_number.fap`](bin/momentum/guess_the_number.fap).
 2. Copy it to `SD Card/apps/Games/` on your Flipper with [qFlipper](https://flipperzero.one/update) or the Flipper mobile app.
 3. Open it under **Apps → Games → Guess The Number**.
 
-The prebuilt `.fap` is built against Momentum firmware (`mntm-012`, API 87.1). For other firmware, build it yourself (below).
+On other firmware versions, build it yourself (below).
 
 ## Controls
 
@@ -61,9 +61,7 @@ You need [uFBT](https://github.com/flipperdevices/flipperzero-ufbt):
 
 ```sh
 pip install ufbt
-ufbt update                       # official firmware SDK
-# or, for Momentum:
-ufbt update --index-url=https://up.momentum-fw.dev/firmware/directory.json
+ufbt update                       # SDK for the official firmware
 
 ufbt                              # builds dist/guess_the_number.fap
 ufbt launch                       # builds, installs and starts it on a connected Flipper
@@ -82,6 +80,10 @@ ufbt launch                       # builds, installs and starts it on a connecte
 ## Where it started
 
 [`original/guess_the_number.py`](original/guess_the_number.py) is the terminal game this app is based on. The texts, the 0.85 s "Starting game..." pause, the 2-second victory pause and the intentionally missing `lower == upper` shortcut all made it over to the Flipper.
+
+## License
+
+[MIT](LICENSE)
 
 ## Credits
 
