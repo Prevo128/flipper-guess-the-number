@@ -1,3 +1,14 @@
+/*
+ * Game logic for Guess The Number.
+ *
+ * Everything here is plain C on top of GtnState: menus, both game modes,
+ * scoring and stats. No Flipper calls on purpose, which keeps it easy to
+ * follow next to the original Python version (original/guess_the_number.py).
+ *
+ * Time always comes in as `now` (ms), so pauses like the 0.85 s
+ * "Starting game..." are just timestamps checked in gtn_tick().
+ */
+
 #include "gtn.h"
 
 #include <stdio.h>
@@ -24,6 +35,7 @@ static uint32_t bit_length(uint32_t v) {
     return n;
 }
 
+/* Switching screens also resets the clock most animations count from. */
 static void go(GtnState* s, GtnScreen screen, uint32_t now) {
     s->screen = screen;
     s->screen_since = now;
@@ -83,6 +95,8 @@ static void to_menu(GtnState* s, uint32_t now) {
 
 /* ---------- player guesses ---------- */
 
+/* Same as the Python version: pick the secret, then wait a moment before
+ * the game "starts". The guess starts in the middle of the range. */
 static void player_start(GtnState* s, uint32_t now) {
     s->tries = 0;
     s->hint_dir = 0;
@@ -178,6 +192,8 @@ static void player_submit(GtnState* s, uint32_t now) {
 
 /* ---------- computer guesses ---------- */
 
+/* Max tries is the bit length of the range size, exactly like
+ * (ceiling - floor + 1).bit_length() in Python. */
 static void computer_intro(GtnState* s, uint32_t now) {
     s->tries = 0;
     s->lower = s->floor;
@@ -204,6 +220,8 @@ static void computer_next(GtnState* s, uint32_t now) {
     go(s, GtnScreenComputer, now);
 }
 
+/* Called once the thinking pause is over. If lower passed upper, one of
+ * the answers was a lie (or a typo), and we call the player out. */
 static void computer_resolve(GtnState* s, uint32_t now) {
     s->thinking = false;
     if(s->lower > s->upper) {
@@ -261,6 +279,8 @@ static void computer_answer(GtnState* s, int answer, uint32_t now) {
 
 /* ---------- input ---------- */
 
+/* Holding a button speeds things up: after about 10 repeats the step
+ * becomes 10x bigger, so getting to 9999 doesn't take forever. */
 static int32_t step_for(GtnState* s, InputType type, int32_t base) {
     if(type == InputTypeRepeat) {
         if(s->repeat_count < 0xFFFF) s->repeat_count++;
@@ -502,6 +522,8 @@ void gtn_input(GtnState* s, InputKey key, InputType type, uint32_t now) {
     }
 }
 
+/* Runs every loop, button or not. Handles everything time-based: play time,
+ * the hold-to-reset on the stats screen and the timed screens. */
 void gtn_tick(GtnState* s, uint32_t now) {
     /* time played */
     if(s->last_tick) {

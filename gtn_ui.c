@@ -1,3 +1,10 @@
+/*
+ * Everything you see on screen. The display is 128x64, 1-bit, and gets
+ * redrawn from scratch every frame. Animations don't keep their own state,
+ * they are worked out from how long a screen has been open, so they can't
+ * get out of sync with the game.
+ */
+
 #include "gtn.h"
 #include "gtn_qr.h"
 
@@ -10,8 +17,11 @@
 
 /* ---------- tiny math / randomness for animations ---------- */
 
+/* A rough sine wave, good enough for bobbing and wobbling things. */
 static const int8_t sin_tab[16] = {0, 3, 6, 7, 8, 7, 6, 3, 0, -3, -6, -7, -8, -7, -6, -3};
 
+/* Hash-style "random": the same input always gives the same number, so
+ * the confetti and the number rain look random but don't flicker. */
 static uint32_t prand(uint32_t x) {
     x ^= x >> 16;
     x *= 0x7feb352dU;
@@ -26,6 +36,7 @@ static int32_t abs_i32(int32_t v) {
 }
 
 /* 0..256 ease-out progress of `t` over `dur` */
+/* Fast start, soft landing. Returns 0..256 instead of floats. */
 static int32_t ease_out(uint32_t t, uint32_t dur) {
     if(t >= dur) return 256;
     int32_t p = (int32_t)(t * 256 / dur);
@@ -35,6 +46,7 @@ static int32_t ease_out(uint32_t t, uint32_t dur) {
 
 static const int8_t shake_tab[8] = {3, -3, 2, -2, 1, -1, 1, 0};
 
+/* Short horizontal shake after a wrong guess or an error. */
 static int32_t shake(uint32_t since, uint32_t now) {
     if(since == 0) return 0;
     uint32_t t = now - since;
@@ -56,6 +68,8 @@ static void title_bar(Canvas* canvas, const char* title, int32_t dx) {
 /* Word-wrap `text` into `width` px. '\n' forces a line break.
  * Draws lines [first, first + max_lines) with baselines starting at y.
  * Returns the total number of lines. */
+/* The firmware has no word wrap that fits here, so this is a small one.
+ * It can also skip lines, which is how the long texts scroll. */
 static size_t wrap_text(
     Canvas* canvas,
     const char* text,
@@ -301,6 +315,8 @@ static void draw_range(Canvas* canvas, GtnState* s, uint32_t now) {
 }
 
 /* slot machine style number roller inside a frame */
+/* Slot machine style reel used while the secret is drawn and while the
+ * computer is thinking. It only pretends to roll, the number is decided elsewhere. */
 static void roller(Canvas* canvas, int32_t cy, int32_t lo, int32_t hi, uint32_t bucket) {
     canvas_draw_rframe(canvas, 30, cy - 12, 68, 24, 3);
     /* reel ticks */
@@ -374,6 +390,8 @@ static void draw_player(Canvas* canvas, GtnState* s, uint32_t now) {
     elements_button_center(canvas, "Guess");
 }
 
+/* Two states: "Hmm..." with the reel and a progress bar while thinking,
+ * then the guess with a small pop and the three answer buttons. */
 static void draw_computer(Canvas* canvas, GtnState* s, uint32_t now) {
     uint32_t t = now - s->screen_since;
     char right[16];
@@ -420,6 +438,7 @@ static void draw_computer(Canvas* canvas, GtnState* s, uint32_t now) {
     elements_button_right(canvas, "Higher");
 }
 
+/* The 2 second victory screen (the time.sleep(2) from the Python version). */
 static void draw_celebrate(Canvas* canvas, GtnState* s, uint32_t now) {
     uint32_t t = now - s->screen_since;
 
@@ -479,6 +498,8 @@ static void draw_text(Canvas* canvas, GtnState* s, uint32_t now) {
     elements_button_center(canvas, s->button);
 }
 
+/* The QR code is drawn at 2x so phones can actually scan it. It builds
+ * up row by row, then a scan line passes over it once. */
 static void draw_about(Canvas* canvas, GtnState* s, uint32_t now) {
     uint32_t t = now - s->screen_since;
     const int32_t qx = 2, qy = 2, scale = 2;
@@ -528,6 +549,7 @@ static const char* const stats_titles[GTN_STATS_PAGES] =
     {"Hall of Fame", "You guess", "I guess", "Overall"};
 
 /* count-up animation for numbers when a page opens */
+/* Numbers count up from 0 every time a stats page opens. */
 static uint32_t count_up(uint32_t v, uint32_t t) {
     return (uint32_t)(((uint64_t)v * (uint32_t)ease_out(t, 700)) / 256);
 }
@@ -571,6 +593,7 @@ static void leader_row(Canvas* canvas, int32_t y, const char* label, const char*
 }
 
 /* 16x16 trophy, one row per uint16, bit 15 = leftmost */
+/* 16x16 trophy, drawn by hand. One row per value, leftmost pixel is bit 15. */
 static const uint16_t trophy_bits[16] = {
     0x7FFE,
     0xDFFB,
@@ -730,6 +753,9 @@ static void page_overall(Canvas* canvas, GtnState* s, uint32_t t) {
     leader_row(canvas, 53, "My avg tries", v);
 }
 
+/* The stats screen: four pages you flip with left/right. On top of the
+ * current page come the wipe animation, the page dots and, while OK is
+ * held, the "Reset all stats?" box. */
 static void draw_stats(Canvas* canvas, GtnState* s, uint32_t now) {
     uint32_t t = now - s->page_since;
 
@@ -826,6 +852,7 @@ static void butterfly(Canvas* canvas, int32_t cx, int32_t cy, uint32_t t) {
     canvas_draw_line(canvas, cx, cy - 8, cx + 4, cy - 13);
 }
 
+/* Bye bye, butterfly! It flies off to the top right while the app closes. */
 static void draw_bye(Canvas* canvas, GtnState* s, uint32_t now) {
     uint32_t t = now - s->screen_since;
     /* flutters away up and to the right */
