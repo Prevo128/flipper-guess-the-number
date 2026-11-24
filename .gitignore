@@ -1,0 +1,7 @@
+dist/
+.vscode/
+.ufbt/
+*.elf
+.clang-format
+.editorconfig
+.gitignore.ufbt
