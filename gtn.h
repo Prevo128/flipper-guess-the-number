@@ -22,12 +22,12 @@
 
 #define GTN_MENU_ITEMS 5
 
-#define GTN_STATS_PAGES     4
-#define GTN_RESET_HOLD_MS   1500
-#define GTN_HS_COUNT        3
-#define GTN_HS_MIN_SPAN     10 /* ranges smaller than this don't enter the Hall of Fame */
-#define GTN_STATS_MAGIC     0x534E5447UL /* "GTNS" */
-#define GTN_STATS_VERSION   1
+#define GTN_STATS_PAGES   4
+#define GTN_RESET_HOLD_MS 1500
+#define GTN_HS_COUNT      3
+#define GTN_HS_MIN_SPAN   10 /* ranges smaller than this don't enter the Hall of Fame */
+#define GTN_STATS_MAGIC   0x534E5447UL /* "GTNS" */
+#define GTN_STATS_VERSION 1
 
 typedef struct {
     uint16_t score;

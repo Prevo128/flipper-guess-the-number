@@ -52,10 +52,12 @@ void gtn_stats_reset(GtnStats* st) {
 }
 
 /* inserts a score, returns its rank (1..GTN_HS_COUNT) or 0 */
-static int hs_insert(GtnStats* st, uint16_t score, int32_t floor, int32_t ceiling, uint32_t tries) {
+static int
+    hs_insert(GtnStats* st, uint16_t score, int32_t floor, int32_t ceiling, uint32_t tries) {
     for(int i = 0; i < GTN_HS_COUNT; i++) {
         if(score > st->hs[i].score) {
-            for(int j = GTN_HS_COUNT - 1; j > i; j--) st->hs[j] = st->hs[j - 1];
+            for(int j = GTN_HS_COUNT - 1; j > i; j--)
+                st->hs[j] = st->hs[j - 1];
             st->hs[i].score = score;
             st->hs[i].floor = (int16_t)floor;
             st->hs[i].ceiling = (int16_t)ceiling;
@@ -127,9 +129,18 @@ static void player_submit(GtnState* s, uint32_t now) {
         if(span < GTN_HS_MIN_SPAN) {
             snprintf(score_line, sizeof(score_line), "Range too small for the Hall of Fame.");
         } else if(rank == 1) {
-            snprintf(score_line, sizeof(score_line), "Score: %lu pts. NEW HIGHSCORE!", (unsigned long)score);
+            snprintf(
+                score_line,
+                sizeof(score_line),
+                "Score: %lu pts. NEW HIGHSCORE!",
+                (unsigned long)score);
         } else if(rank > 1) {
-            snprintf(score_line, sizeof(score_line), "Score: %lu pts. #%d in the Hall of Fame!", (unsigned long)score, rank);
+            snprintf(
+                score_line,
+                sizeof(score_line),
+                "Score: %lu pts. #%d in the Hall of Fame!",
+                (unsigned long)score,
+                rank);
         } else {
             snprintf(score_line, sizeof(score_line), "Score: %lu pts.", (unsigned long)score);
         }
@@ -220,11 +231,13 @@ static void computer_resolve(GtnState* s, uint32_t now) {
 static void computer_answer(GtnState* s, int answer, uint32_t now) {
     int32_t g = s->guess;
     if(answer > 0) {
-        snprintf(s->msg, sizeof(s->msg), "Alright, it's not %ld. I'll try a higher number.", (long)g);
+        snprintf(
+            s->msg, sizeof(s->msg), "Alright, it's not %ld. I'll try a higher number.", (long)g);
         s->lower = g + 1;
         computer_next(s, now);
     } else if(answer < 0) {
-        snprintf(s->msg, sizeof(s->msg), "Alright, it's not %ld. I'll try a lower number.", (long)g);
+        snprintf(
+            s->msg, sizeof(s->msg), "Alright, it's not %ld. I'll try a lower number.", (long)g);
         s->upper = g - 1;
         computer_next(s, now);
     } else {

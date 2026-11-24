@@ -71,18 +71,18 @@ static size_t wrap_text(
     size_t n = 0;
     const char* p = text;
 
-#define EMIT()                                                            \
-    do {                                                                  \
-        if(n >= first && n < first + max_lines) {                         \
-            int32_t ly = y + (int32_t)(n - first) * line_h;               \
-            if(center)                                                    \
-                canvas_draw_str_aligned(                                  \
+#define EMIT()                                                                  \
+    do {                                                                        \
+        if(n >= first && n < first + max_lines) {                               \
+            int32_t ly = y + (int32_t)(n - first) * line_h;                     \
+            if(center)                                                          \
+                canvas_draw_str_aligned(                                        \
                     canvas, x + width / 2, ly, AlignCenter, AlignBottom, line); \
-            else                                                          \
-                canvas_draw_str(canvas, x, ly, line);                     \
-        }                                                                 \
-        n++;                                                              \
-        line[0] = '\0';                                                   \
+            else                                                                \
+                canvas_draw_str(canvas, x, ly, line);                           \
+        }                                                                       \
+        n++;                                                                    \
+        line[0] = '\0';                                                         \
     } while(0)
 
     while(*p) {
@@ -96,7 +96,8 @@ static size_t wrap_text(
             continue;
         }
         const char* w = p;
-        while(*p && *p != ' ' && *p != '\n') p++;
+        while(*p && *p != ' ' && *p != '\n')
+            p++;
         size_t wl = (size_t)(p - w);
         if(wl > sizeof(line) - 1) wl = sizeof(line) - 1;
         size_t ll = strlen(line);
@@ -122,11 +123,13 @@ static size_t wrap_text(
 }
 
 static void tri_up(Canvas* canvas, int32_t x, int32_t y) {
-    for(int i = 0; i < 4; i++) canvas_draw_line(canvas, x - i, y + i, x + i, y + i);
+    for(int i = 0; i < 4; i++)
+        canvas_draw_line(canvas, x - i, y + i, x + i, y + i);
 }
 
 static void tri_down(Canvas* canvas, int32_t x, int32_t y) {
-    for(int i = 0; i < 4; i++) canvas_draw_line(canvas, x - i, y - i, x + i, y - i);
+    for(int i = 0; i < 4; i++)
+        canvas_draw_line(canvas, x - i, y - i, x + i, y - i);
 }
 
 static void star(Canvas* canvas, int32_t x, int32_t y, bool big) {
@@ -149,7 +152,8 @@ static void header_row(Canvas* canvas, const char* left, const char* right) {
 }
 
 /* returns the drawn width */
-static uint16_t big_number(Canvas* canvas, int32_t cx, int32_t baseline, int32_t value, bool question) {
+static uint16_t
+    big_number(Canvas* canvas, int32_t cx, int32_t baseline, int32_t value, bool question) {
     char buf[16];
     snprintf(buf, sizeof(buf), "%ld", (long)value);
     canvas_set_font(canvas, FontBigNumbers);
@@ -190,7 +194,8 @@ static void draw_splash(Canvas* canvas, uint32_t t) {
     canvas_draw_rframe(canvas, 8, box_y, 112, 22, 3);
     canvas_draw_rframe(canvas, 9, box_y + 1, 110, 20, 2);
     canvas_set_font(canvas, FontPrimary);
-    canvas_draw_str_aligned(canvas, SCREEN_W / 2, box_y + 15, AlignCenter, AlignBottom, "Guess The Number");
+    canvas_draw_str_aligned(
+        canvas, SCREEN_W / 2, box_y + 15, AlignCenter, AlignBottom, "Guess The Number");
 
     /* typed byline */
     if(t > 650) {
@@ -286,9 +291,11 @@ static void draw_range(Canvas* canvas, GtnState* s, uint32_t now) {
     canvas_set_font(canvas, FontSecondary);
     if(s->range_error) {
         int32_t dx = shake(s->nudge_at, now);
-        canvas_draw_str_aligned(canvas, SCREEN_W / 2 + dx, 51, AlignCenter, AlignBottom, "Min must be <= Max!");
+        canvas_draw_str_aligned(
+            canvas, SCREEN_W / 2 + dx, 51, AlignCenter, AlignBottom, "Min must be <= Max!");
     } else {
-        canvas_draw_str_aligned(canvas, SCREEN_W / 2, 51, AlignCenter, AlignBottom, "Hold < > to go fast");
+        canvas_draw_str_aligned(
+            canvas, SCREEN_W / 2, 51, AlignCenter, AlignBottom, "Hold < > to go fast");
     }
     elements_button_center(canvas, "Start");
 }
@@ -331,7 +338,8 @@ static void draw_starting(Canvas* canvas, GtnState* s, uint32_t now) {
         canvas_set_font(canvas, FontPrimary);
         /* "Game started!" pops in */
         int32_t dy = (t < 600) ? (8 * (256 - ease_out(t, 300))) / 256 : 0;
-        canvas_draw_str_aligned(canvas, SCREEN_W / 2, 25 + dy, AlignCenter, AlignBottom, "Game started!");
+        canvas_draw_str_aligned(
+            canvas, SCREEN_W / 2, 25 + dy, AlignCenter, AlignBottom, "Game started!");
         if((t / 250) % 2 == 0 || t > 1000) {
             star(canvas, 18, 20 + dy, true);
             star(canvas, 110, 20 + dy, true);
@@ -516,8 +524,8 @@ static void draw_about(Canvas* canvas, GtnState* s, uint32_t now) {
 
 /* ---------- stats ---------- */
 
-static const char* const stats_titles[GTN_STATS_PAGES] = {
-    "Hall of Fame", "You guess", "I guess", "Overall"};
+static const char* const stats_titles[GTN_STATS_PAGES] =
+    {"Hall of Fame", "You guess", "I guess", "Overall"};
 
 /* count-up animation for numbers when a page opens */
 static uint32_t count_up(uint32_t v, uint32_t t) {
@@ -535,13 +543,15 @@ static void fmt_avg(char* out, size_t size, uint32_t sum, uint32_t n) {
 
 static void fmt_time(char* out, size_t size, uint32_t sec) {
     if(sec >= 3600) {
-        snprintf(out, size, "%luh %02lum", (unsigned long)(sec / 3600), (unsigned long)(sec / 60 % 60));
+        snprintf(
+            out, size, "%luh %02lum", (unsigned long)(sec / 3600), (unsigned long)(sec / 60 % 60));
     } else {
         snprintf(out, size, "%lum %02lus", (unsigned long)(sec / 60), (unsigned long)(sec % 60));
     }
 }
 
-static void tile(Canvas* canvas, int32_t x, int32_t y, int32_t w, const char* label, const char* value) {
+static void
+    tile(Canvas* canvas, int32_t x, int32_t y, int32_t w, const char* label, const char* value) {
     canvas_draw_rframe(canvas, x, y, w, 20, 3);
     canvas_set_font(canvas, FontSecondary);
     canvas_draw_str(canvas, x + 3, y + 8, label);
@@ -562,8 +572,22 @@ static void leader_row(Canvas* canvas, int32_t y, const char* label, const char*
 
 /* 16x16 trophy, one row per uint16, bit 15 = leftmost */
 static const uint16_t trophy_bits[16] = {
-    0x7FFE, 0xDFFB, 0x9FF9, 0x9FF9, 0x9FF9, 0x5FFA, 0x3FFC, 0x1FF8,
-    0x0FF0, 0x03C0, 0x0180, 0x0180, 0x03C0, 0x0FF0, 0x0810, 0x0FF0};
+    0x7FFE,
+    0xDFFB,
+    0x9FF9,
+    0x9FF9,
+    0x9FF9,
+    0x5FFA,
+    0x3FFC,
+    0x1FF8,
+    0x0FF0,
+    0x03C0,
+    0x0180,
+    0x0180,
+    0x03C0,
+    0x0FF0,
+    0x0810,
+    0x0FF0};
 
 static void trophy(Canvas* canvas, int32_t x0, int32_t y0, uint32_t t) {
     for(int32_t y = 0; y < 16; y++) {
@@ -594,7 +618,8 @@ static void page_hall(Canvas* canvas, GtnState* s, uint32_t t, uint32_t now) {
 
     if(s->stats.hs[0].score == 0) {
         canvas_set_font(canvas, FontSecondary);
-        wrap_text(canvas, "No champions yet. Win a game to get in here!", 26, 27, 98, 9, 0, 3, true);
+        wrap_text(
+            canvas, "No champions yet. Win a game to get in here!", 26, 27, 98, 9, 0, 3, true);
         return;
     }
 
@@ -629,7 +654,8 @@ static void page_hall(Canvas* canvas, GtnState* s, uint32_t t, uint32_t now) {
         snprintf(buf, sizeof(buf), "%d-%d %ux", h->floor, h->ceiling, (unsigned)h->tries);
         canvas_draw_str_aligned(canvas, x + 100, y + 10, AlignRight, AlignBottom, buf);
         if(i < GTN_HS_COUNT - 1) {
-            for(int32_t dx = x + 14; dx < x + 100; dx += 3) canvas_draw_dot(canvas, dx, y + 13);
+            for(int32_t dx = x + 14; dx < x + 100; dx += 3)
+                canvas_draw_dot(canvas, dx, y + 13);
         }
         if(i == 0 && t > 500) {
             /* crown over #1 */
@@ -766,7 +792,8 @@ static void draw_stats(Canvas* canvas, GtnState* s, uint32_t now) {
         canvas_set_color(canvas, ColorBlack);
         canvas_draw_rframe(canvas, 12 + jx, 18, 104, 30, 3);
         canvas_set_font(canvas, FontPrimary);
-        canvas_draw_str_aligned(canvas, SCREEN_W / 2 + jx, 31, AlignCenter, AlignBottom, "Reset all stats?");
+        canvas_draw_str_aligned(
+            canvas, SCREEN_W / 2 + jx, 31, AlignCenter, AlignBottom, "Reset all stats?");
         canvas_draw_rframe(canvas, 18 + jx, 35, 92, 8, 2);
         canvas_draw_box(canvas, 20 + jx, 37, (size_t)(88 * p / 100), 4);
     }
@@ -777,7 +804,8 @@ static void draw_stats(Canvas* canvas, GtnState* s, uint32_t now) {
         canvas_draw_rbox(canvas, 24, 24, 80, 16, 3);
         canvas_set_color(canvas, ColorWhite);
         canvas_set_font(canvas, FontPrimary);
-        canvas_draw_str_aligned(canvas, SCREEN_W / 2, 36, AlignCenter, AlignBottom, "Stats cleared");
+        canvas_draw_str_aligned(
+            canvas, SCREEN_W / 2, 36, AlignCenter, AlignBottom, "Stats cleared");
         canvas_set_color(canvas, ColorBlack);
     }
 }
@@ -813,7 +841,8 @@ static void draw_bye(Canvas* canvas, GtnState* s, uint32_t now) {
         if(t > i * 150 && ((t / 100 + i) % 2)) canvas_draw_dot(canvas, px, py);
     }
     canvas_set_font(canvas, FontPrimary);
-    canvas_draw_str_aligned(canvas, SCREEN_W / 2, 58, AlignCenter, AlignBottom, "Bye bye, butterfly!");
+    canvas_draw_str_aligned(
+        canvas, SCREEN_W / 2, 58, AlignCenter, AlignBottom, "Bye bye, butterfly!");
 }
 
 void gtn_draw(Canvas* canvas, GtnState* s, uint32_t now) {
